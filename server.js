@@ -3,7 +3,7 @@ const express = require('express');
 
 //add the required data
 const {animals} = require('./data/animals.json')
-//create port var to run in heroku
+//create port const to run in heroku
 const PORT = process.env.PORT || 3002;
 //install server
 const app = express();
