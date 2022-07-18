@@ -1,6 +1,10 @@
 //add express
 const express = require('express');
 
+//import and use the fs library to write that data to animals.json.
+const fs = require('fs');
+const path = require('path');
+
 //add the required data
 const {animals} = require('./data/animals.json')
 //create port const to run in heroku
@@ -8,7 +12,12 @@ const PORT = process.env.PORT || 3002;
 //install server
 const app = express();
 
-//add filter functunality
+// parse incoming string or array data
+app.use(express.urlencoded({ extended: true }));
+// parse incoming JSON data
+app.use(express.json());
+
+//add filter functunality using query (fetch results after the ?)
 function filterByQuery(query, animalsArray){
     // Save personalityTraits as a dedicated array.
     let personalityTraitsArray = [];
@@ -55,6 +64,43 @@ function findById(id, animalsArray){
     return result;
 };
 
+//create a new function that accepts the POST route's req.body value
+//and the array we want to add the data to
+function createNewAnimal(body, animalsArray){
+    const animal = body;
+    animalsArray.push(animal)
+    //add  fs.writeFileSync() method, which is the synchronous version of fs.writeFile() 
+    //and doesn't require a callback function
+    fs.writeFileSync(
+        //find the directory of the file we execute the code in,with the path to the animals.json file
+        path.join(__dirname,'./data/animals.json'),
+        //save the JavaScript array data as JSON using JSON.stringify
+        //the null argument means we don't want to edit any of our existing data;
+        //The 2 indicates we want to create white space between our values to make it more readable
+        JSON.stringify({animals: animalsArray }, null, 2)
+    );
+
+    return animal;
+}
+
+//add validation to check if all data from req.body exists and it's the right type
+function validateAnimal(animal) {
+    if(!animal.name || typeof animal.name !== 'string'){
+        return false;
+    }
+    if(!animal.species || typeof animal.species !== 'string'){
+        return false;
+    }
+    if(!animal.diet || typeof animal.diet !== 'string'){
+        return false;
+    }
+    if(!animal.personalityTraits || !Array.isArray(animal.personalityTraits)){
+        return false;
+    }
+    return false;
+
+} 
+
 
 //add data route
 app.get('/api/animals', (req, res) => {
@@ -66,7 +112,7 @@ app.get('/api/animals', (req, res) => {
     res.json(results);
 });
 
-//create a new get for animal ids from parameters
+//create a new get for animal ids from using param which is specific to a single property
 app.get('/api/animals/:id', (req,res) => {
     const result = findById(req.params.id, animals);
     //add 404 error if the id is not in the data
@@ -75,6 +121,23 @@ app.get('/api/animals/:id', (req,res) => {
     } else {
         //res.sendStatus(status)
         res.send(404)
+    }
+});
+
+//add post route 
+app.post('/api/animals', (req,res) => {
+    //req.body is where our incoming will be
+    // set id based on what the next index of the array will be
+    req.body.id = animals.length.toString();
+    
+    //if any data in req.body is incorrect, send 400 error back
+    if(!validateAnimal(req.body)){
+        res.status(400).send('The animal is not properly formatted.');
+    } else {
+        //add animal to json file and animals array in this function
+        const animal = createNewAnimal(req.body, animals);
+
+        res.json(animal);
     }
 });
 
