@@ -112,7 +112,7 @@
     {
       "name": "Dante",
       "species": "Cat",
-      "diet": "folivore",
+      "diet": "carnivore",
       "personalityTraits": [
         "hungry"
       ],
