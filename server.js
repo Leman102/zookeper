@@ -17,6 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 // parse incoming JSON data
 app.use(express.json());
 
+//call multiple css and js files (from the public folder)
+app.use(express.static('public'))
+
 //add filter functunality using query (fetch results after the ?)
 function filterByQuery(query, animalsArray){
     // Save personalityTraits as a dedicated array.
@@ -73,10 +76,10 @@ function createNewAnimal(body, animalsArray){
     //and doesn't require a callback function
     fs.writeFileSync(
         //find the directory of the file we execute the code in,with the path to the animals.json file
-        path.join(__dirname,'./data/animals.json'),
         //save the JavaScript array data as JSON using JSON.stringify
         //the null argument means we don't want to edit any of our existing data;
         //The 2 indicates we want to create white space between our values to make it more readable
+        path.join(__dirname,'./data/animals.json'),
         JSON.stringify({animals: animalsArray }, null, 2)
     );
 
@@ -85,21 +88,20 @@ function createNewAnimal(body, animalsArray){
 
 //add validation to check if all data from req.body exists and it's the right type
 function validateAnimal(animal) {
-    if(!animal.name || typeof animal.name !== 'string'){
-        return false;
+    if (!animal.name || typeof animal.name !== 'string') {
+      return false;
     }
-    if(!animal.species || typeof animal.species !== 'string'){
-        return false;
+    if (!animal.species || typeof animal.species !== 'string') {
+      return false;
     }
-    if(!animal.diet || typeof animal.diet !== 'string'){
-        return false;
+    if (!animal.diet || typeof animal.diet !== 'string') {
+      return false;
     }
-    if(!animal.personalityTraits || !Array.isArray(animal.personalityTraits)){
-        return false;
+    if (!animal.personalityTraits || !Array.isArray(animal.personalityTraits)) {
+      return false;
     }
-    return false;
-
-} 
+    return true;
+}
 
 
 //add data route
@@ -139,6 +141,24 @@ app.post('/api/animals', (req,res) => {
 
         res.json(animal);
     }
+});
+
+//call the indext.html file using '/' It brings us to the root route of the server
+app.get('/',(req,res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'))
+});
+
+//add animals.html
+app.get('/animals', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+//add zookepers.html
+app.get('/zookeepers', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+//if users adds an invalid route return wildcard/index.html
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
 //listen the express method

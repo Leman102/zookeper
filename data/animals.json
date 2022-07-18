@@ -108,6 +108,15 @@
         "hungry"
       ],
       "id": "10"
+    },
+    {
+      "name": "Dante",
+      "species": "Cat",
+      "diet": "folivore",
+      "personalityTraits": [
+        "hungry"
+      ],
+      "id": "11"
     }
   ]
 }
